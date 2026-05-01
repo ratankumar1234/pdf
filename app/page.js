@@ -24,7 +24,13 @@ import {
   CheckCircle,
   Sparkles,
   Zap,
-  FileText
+  FileText,
+  Link as LinkIcon,
+  Globe,
+  Mail,
+  Phone,
+  Trash2,
+  Save
 } from "lucide-react";
 import { ethers } from "ethers";
 import { useCallback, useEffect, useMemo, useState, useRef } from "react";
@@ -39,7 +45,7 @@ const BYTES32_PATTERN = /^0x[0-9a-fA-F]{64}$/;
 
 function shortAddress(address) {
   if (!address) return "";
-  return `${address.slice(0, 6)}...${address.slice(-4)}`;
+  return address; 
 }
 
 function readError(error) {
@@ -149,10 +155,6 @@ function Stat({ label, value }) {
   );
 }
 
-/**
- * CREATIVE DYNAMIC SIMULATION
- * Implements moving light rays and floating nodes on light cream bg
- */
 function CreativeSimulation() {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   
@@ -226,7 +228,6 @@ function Landing({ onSelectRole }) {
           <span style={{ fontWeight: '800', fontSize: '0.9rem', color: '#1e293b', letterSpacing: '1.5px' }}>ENCRYPTED PROTOCOL V1.0</span>
         </div>
         
-        {/* UPDATED HEADING */}
         <h1 style={{ fontSize: "5.8rem", fontWeight: "900", color: "#0f172a", marginBottom: "16px", letterSpacing: '-4px', lineHeight: '0.95' }}>
           Work <span style={{ color: '#2563eb', fontStyle: 'italic' }}>Decentralised.</span>
         </h1>
@@ -235,7 +236,6 @@ function Landing({ onSelectRole }) {
         </p>
         
         <div style={{ display: "flex", gap: "48px", justifyContent: "center" }}>
-          {/* Hirer Card - COLORFUL BLUE */}
           <div 
             style={{ 
               ...cardBase, 
@@ -256,7 +256,6 @@ function Landing({ onSelectRole }) {
             </div>
           </div>
 
-          {/* Freelancer Card - COLORFUL ONYX */}
           <div 
             style={{ 
               ...cardBase, 
@@ -554,7 +553,27 @@ function AuditPanel({
   freelancerCV
 }) {
   const [flagDescription, setFlagDescription] = useState("");
+  const [fraudLevel, setFraudLevel] = useState("1"); 
   const [showFlagInput, setShowFlagInput] = useState(false);
+
+  const currentAddressFlags = flaggedHistory.filter(f => f.address.toLowerCase() === auditAddress.toLowerCase());
+  const flagCount = currentAddressFlags.length;
+
+  const calculateRisk = () => {
+    if (!audit || audit.completedJobs === 0) {
+        return flagCount > 0 ? 100 : 0;
+    }
+    const sumFraudLevels = currentAddressFlags.reduce((acc, f) => acc + (f.fraudLevel || 0), 0);
+    const sumRatings = audit.completedJobs * 4.8; 
+    
+    if (sumFraudLevels > 0 && sumRatings === 0) return 100;
+    if (sumFraudLevels === 0) return 0;
+    
+    const risk = (sumFraudLevels / sumRatings) * 100;
+    return Math.min(Math.round(risk), 100);
+  };
+
+  const manualRisk = calculateRisk();
 
   return (
     <section className="panel audit-panel">
@@ -584,14 +603,39 @@ function AuditPanel({
         <div style={{ background: '#f8fafc', padding: '15px', borderRadius: '12px', marginBottom: '20px', border: '1px solid #e2e8f0' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px', color: '#0f172a' }}>
             <FileText size={18} />
-            <strong style={{ fontSize: '0.95rem' }}>Freelancer CV</strong>
+            <strong style={{ fontSize: '0.95rem' }}>Freelancer Professional Info</strong>
           </div>
           {freelancerCV ? (
             <>
-              <p style={{ fontSize: '0.85rem', color: '#334155', margin: '0 0 10px 0' }}>{freelancerCV.description}</p>
-              <a href={ipfsUrl(freelancerCV.cid)} target="_blank" rel="noreferrer" style={{ fontSize: '0.8rem', color: '#2563eb', textDecoration: 'underline', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                View CV Document <ExternalLink size={12} />
-              </a>
+              <p style={{ fontSize: '0.85rem', color: '#334155', margin: '0 0 5px 0' }}><strong>Bio:</strong> {freelancerCV.description}</p>
+              
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
+                <div style={{ fontSize: '0.8rem', color: '#64748b' }}>
+                    <Mail size={12} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '4px'}}/>
+                    {freelancerCV.email || "No email"}
+                </div>
+                <div style={{ fontSize: '0.8rem', color: '#64748b' }}>
+                    <Phone size={12} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '4px'}}/>
+                    {freelancerCV.phone || "No phone"}
+                </div>
+                <div style={{ fontSize: '0.8rem', color: '#64748b' }}>
+                    <strong>LinkedIn:</strong> {freelancerCV.linkedin || "N/A"}
+                </div>
+                <div style={{ fontSize: '0.8rem', color: '#64748b' }}>
+                    <strong>Twitter:</strong> {freelancerCV.twitter || "N/A"}
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '15px' }}>
+                <a href={ipfsUrl(freelancerCV.cid)} target="_blank" rel="noreferrer" style={{ fontSize: '0.8rem', color: '#2563eb', textDecoration: 'underline', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  IPFS Document <ExternalLink size={12} />
+                </a>
+                {freelancerCV.externalLink && (
+                  <a href={freelancerCV.externalLink} target="_blank" rel="noreferrer" style={{ fontSize: '0.8rem', color: '#10b981', textDecoration: 'underline', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    CV Link <ExternalLink size={12} />
+                  </a>
+                )}
+              </div>
             </>
           ) : (
             <p style={{ fontSize: '0.85rem', color: '#64748b', fontStyle: 'italic' }}>This user hasn't uploaded a CV yet.</p>
@@ -599,12 +643,12 @@ function AuditPanel({
         </div>
       )}
 
-      {!audit ? null : audit.openedJobs === 0 ? (
+      {!audit ? null : audit.openedJobs === 0 && flagCount === 0 ? (
         <NoRecords />
       ) : (
         <div className="audit-output" style={{ borderBottom: '1px solid #e5e7eb', paddingBottom: '1.5rem', marginBottom: '1.5rem' }}>
-          <div className={`risk-ring ${audit.flagged ? "danger" : "ok"}`}>
-            <strong>{audit.riskScore}</strong>
+          <div className={`risk-ring ${manualRisk > 50 ? "danger" : "ok"}`}>
+            <strong>{manualRisk}%</strong>
             <span>risk</span>
           </div>
           <div className="stats-grid">
@@ -615,7 +659,7 @@ function AuditPanel({
             <Stat label="Escrowed" value={`${formatEth(audit.totalEscrowedWei)} ETH`} />
             <Stat label="Paid" value={`${formatEth(audit.totalPaidWei)} ETH`} />
             <Stat label="Refunded" value={`${formatEth(audit.totalRefundedWei)} ETH`} />
-            <Stat label="Flagged" value={audit.flagged ? "Yes" : "No"} />
+            <Stat label="Flagged" value={flagCount > 0 ? `${flagCount} flags` : "No"} />
             <Stat label="Avg Freelancer Rating" value="4.8 / 5" /> 
           </div>
 
@@ -629,6 +673,21 @@ function AuditPanel({
             </button>
           ) : (
             <div style={{ marginTop: '1rem' }}>
+              <div style={{ display: 'flex', gap: '15px', marginBottom: '15px' }}>
+                <Field label="Fraud Level (1-5)">
+                  <select 
+                    value={fraudLevel} 
+                    onChange={(e) => setFraudLevel(e.target.value)}
+                    style={{ padding: '8px', borderRadius: '8px' }}
+                  >
+                    <option value="1">1 - Minor</option>
+                    <option value="2">2 - Low</option>
+                    <option value="3">3 - Moderate</option>
+                    <option value="4">4 - High</option>
+                    <option value="5">5 - Critical</option>
+                  </select>
+                </Field>
+              </div>
               <Field label="Flag Description">
                 <textarea 
                   value={flagDescription}
@@ -641,7 +700,7 @@ function AuditPanel({
                 <button 
                   className="primary-button danger" 
                   onClick={() => {
-                    onFlag(auditAddress, flagDescription);
+                    onFlag(auditAddress, flagDescription, Number(fraudLevel));
                     setFlagDescription("");
                     setShowFlagInput(false);
                   }}
@@ -666,7 +725,7 @@ function AuditPanel({
               <div key={idx} style={{ background: '#fef2f2', padding: '12px', borderRadius: '10px', border: '1px solid #fee2e2' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
                   <strong style={{ fontSize: '0.9rem' }}>{shortAddress(item.address)}</strong>
-                  <span style={{ fontSize: '0.75rem', color: '#dc2626', fontWeight: 'bold' }}>Risk: {item.risk}</span>
+                  <span style={{ fontSize: '0.75rem', color: '#dc2626', fontWeight: 'bold' }}>Fraud Level: {item.fraudLevel}/5</span>
                 </div>
                 <p style={{ fontSize: '0.8rem', color: '#4b5563', margin: '0' }}>"{item.description}"</p>
                 <div style={{ marginTop: '5px', display: 'flex', gap: '10px', fontSize: '0.75rem', color: '#9ca3af' }}>
@@ -683,7 +742,7 @@ function AuditPanel({
   );
 }
 
-function FreelancerProfile({ account, myServices, freelancerJobs, balance }) {
+function FreelancerProfile({ account, myServices, freelancerJobs, balance, flagCount }) {
   const completedCount = freelancerJobs.filter(j => j.status === 3).length;
   const ratedJobs = freelancerJobs.filter(j => j.rated);
   const totalRatingCount = ratedJobs.length;
@@ -715,8 +774,12 @@ function FreelancerProfile({ account, myServices, freelancerJobs, balance }) {
         <div className="stats-grid">
           <Stat label="Total Services" value={myServices.length} />
           <Stat label="Completed Jobs" value={completedCount} />
-          <Stat label="Profile Rating" value={totalRatingCount > 0 ? `${avgRating} / 5 (${totalRatingCount} ${totalRatingCount === 1 ? 'rating' : 'ratings'})` : "N/A"} />
+          <Stat label="Profile Rating" value={totalRatingCount > 0 ? `${avgRating} / 5` : "N/A"} />
           <Stat label="Wallet Balance" value={`${balance} ETH`} />
+          <div className="stat" style={{ color: flagCount > 0 ? '#dc2626' : 'inherit' }}>
+            <span>Fraud Flags Received</span>
+            <strong>{flagCount}</strong>
+          </div>
         </div>
       </div>
     </section>
@@ -746,71 +809,16 @@ function HirerDashboard(props) {
 
   const filteredServices = useMemo(() => {
     if (!searchId.trim()) return services;
-    const term = searchId.toLowerCase().replace("service", "").trim();
-    return services.filter(s => s.id.toString() === term);
+    const term = searchId.toLowerCase().trim();
+    return services.filter(s => {
+      const idStr = s.id.toString().toLowerCase();
+      const metadata = (s.metadataCid || "").toLowerCase();
+      return idStr.includes(term) || metadata.includes(term);
+    });
   }, [services, searchId]);
 
   return (
     <div className="dashboard-grid hirer-grid">
-      <section className="panel services-panel">
-        <div className="section-title">
-          <div>
-            <p className="eyebrow">Marketplace</p>
-            <h2>Offered services</h2>
-          </div>
-          <div className="segmented">
-            <button
-              type="button"
-              className={sortMode === "newest" ? "active" : ""}
-              onClick={() => setSortMode("newest")}
-            >
-              Newest
-            </button>
-            <button
-              type="button"
-              className={sortMode === "rated" ? "active" : ""}
-              onClick={() => setSortMode("rated")}
-            >
-              Highest rated
-            </button>
-          </div>
-        </div>
-
-        <div className="audit-search mb-4" style={{ marginBottom: '1.5rem' }}>
-          <Field label="Search by Service ID">
-            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-              <input
-                value={searchId}
-                onChange={(e) => setSearchId(e.target.value)}
-                placeholder="e.service 1, service 2..."
-                style={{ paddingLeft: '2.5rem' }}
-              />
-              <Search size={18} style={{ position: 'absolute', left: '0.75rem', color: '#71717a' }} />
-            </div>
-          </Field>
-        </div>
-
-        {filteredServices.length === 0 ? (
-          <NoRecords label={searchId ? "No service matches that ID." : "No records found."} />
-        ) : (
-          <div className="record-list">
-            {filteredServices.map((service) => (
-              <ServiceRecord
-                key={service.id}
-                service={service}
-                account={account}
-                hireDrafts={hireDrafts}
-                setHireDrafts={setHireDrafts}
-                onHire={onHire}
-                busy={busy}
-              />
-            ))}
-          </div>
-        )}
-      </section>
-
-      <AuditPanel {...props} />
-
       <section className="panel jobs-panel">
         <div className="section-title">
           <div>
@@ -843,6 +851,65 @@ function HirerDashboard(props) {
           </div>
         )}
       </section>
+
+      <section className="panel services-panel">
+        <div className="section-title">
+          <div>
+            <p className="eyebrow">Marketplace</p>
+            <h2>Offered services</h2>
+          </div>
+          <div className="segmented">
+            <button
+              type="button"
+              className={sortMode === "newest" ? "active" : ""}
+              onClick={() => setSortMode("newest")}
+            >
+              Newest
+            </button>
+            <button
+              type="button"
+              className={sortMode === "rated" ? "active" : ""}
+              onClick={() => setSortMode("rated")}
+            >
+              Highest rated
+            </button>
+          </div>
+        </div>
+
+        <div className="audit-search mb-4" style={{ marginBottom: '1.5rem' }}>
+          <Field label="Search by ID or Description keywords">
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+              <input
+                value={searchId}
+                onChange={(e) => setSearchId(e.target.value)}
+                placeholder="Search service ID or content..."
+                style={{ paddingLeft: '2.5rem' }}
+              />
+              <Search size={18} style={{ position: 'absolute', left: '0.75rem', color: '#71717a' }} />
+            </div>
+          </Field>
+        </div>
+
+        {filteredServices.length === 0 ? (
+          <NoRecords label={searchId ? "No service matches that criteria." : "No records found."} />
+        ) : (
+          <div className="record-list">
+            {filteredServices.map((service) => (
+              <ServiceRecord
+                key={service.id}
+                service={service}
+                account={account}
+                hireDrafts={hireDrafts}
+                setHireDrafts={setHireDrafts}
+                onHire={onHire}
+                busy={busy}
+              />
+            ))}
+          </div>
+        )}
+      </section>
+
+      <AuditPanel {...props} />
     </div>
   );
 }
@@ -860,16 +927,20 @@ function FreelancerDashboard(props) {
     setSubmitDrafts,
     busy,
     onOfferService,
+    onRemoveService,
     onCancel,
     onAutoCancel,
     onSubmitWork,
     account,
-    balance
+    balance,
+    flaggedHistory
   } = props;
 
+  const flagCount = flaggedHistory.filter(f => f.address.toLowerCase() === account.toLowerCase()).length;
+
   return (
-    <div className="dashboard-grid freelancer-grid">
-      <section className="panel offer-panel">
+    <div className="dashboard-grid freelancer-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem', alignItems: 'stretch' }}>
+      <section className="panel offer-panel" style={{ gridColumn: 'span 1', display: 'flex', flexDirection: 'column', minHeight: '520px' }}>
         <div className="section-title">
           <div>
             <p className="eyebrow">Freelancer</p>
@@ -877,26 +948,28 @@ function FreelancerDashboard(props) {
           </div>
           <Plus size={22} />
         </div>
-        <div className="form-grid">
-          <Field label="Price ETH">
-            <input
-              type="number"
-              min="0"
-              step="0.0001"
-              value={offerForm.priceEth}
-              onChange={(event) => setOfferForm((current) => ({ ...current, priceEth: event.target.value }))}
-              placeholder="0.25"
-            />
-          </Field>
-          <Field label="Metadata CID (Description)">
-            <input
-              value={offerForm.metadataCid}
-              onChange={(event) =>
-                setOfferForm((current) => ({ ...current, metadataCid: event.target.value }))
-              }
-              placeholder="ipfs://..."
-            />
-          </Field>
+        <div className="form-grid" style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          <div>
+            <Field label="Price ETH">
+              <input
+                type="number"
+                min="0"
+                step="0.0001"
+                value={offerForm.priceEth}
+                onChange={(event) => setOfferForm((current) => ({ ...current, priceEth: event.target.value }))}
+                placeholder="0.25"
+              />
+            </Field>
+            <Field label="Metadata CID (Description)">
+              <input
+                value={offerForm.metadataCid}
+                onChange={(event) =>
+                  setOfferForm((current) => ({ ...current, metadataCid: event.target.value }))
+                }
+                placeholder="ipfs://..."
+              />
+            </Field>
+          </div>
           <button type="button" className="primary-button" onClick={onOfferService} disabled={busy}>
             <Plus size={17} />
             List
@@ -904,7 +977,7 @@ function FreelancerDashboard(props) {
         </div>
       </section>
 
-      <section className="panel cv-panel" style={{ marginTop: '1.5rem' }}>
+      <section className="panel cv-panel" style={{ gridColumn: 'span 1', display: 'flex', flexDirection: 'column', minHeight: '520px' }}>
         <div className="section-title">
           <div>
             <p className="eyebrow">Professional Identity</p>
@@ -912,22 +985,68 @@ function FreelancerDashboard(props) {
           </div>
           <FileText size={22} />
         </div>
-        <div className="form-grid">
-          <Field label="CV Document CID (IPFS)">
-            <input
-              value={cvForm.cid}
-              onChange={(event) => setCvForm((current) => ({ ...current, cid: event.target.value }))}
-              placeholder="ipfs://..."
-            />
-          </Field>
-          <Field label="Descriptive Message">
-            <textarea
-              value={cvForm.description}
-              onChange={(event) => setCvForm((current) => ({ ...current, description: event.target.value }))}
-              placeholder="Type some descriptive message about your skills..."
-              style={{ width: '100%', borderRadius: '8px', padding: '10px', minHeight: '80px', border: '1px solid #e5e7eb' }}
-            />
-          </Field>
+        <div className="form-grid" style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          <div style={{ overflowY: 'auto' }}>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <Field label="IPFS Document CID">
+                  <input
+                  value={cvForm.cid}
+                  onChange={(event) => setCvForm((current) => ({ ...current, cid: event.target.value }))}
+                  placeholder="ipfs://..."
+                  />
+              </Field>
+              <Field label="External CV Link (Optional)">
+                  <input
+                  value={cvForm.externalLink}
+                  onChange={(event) => setCvForm((current) => ({ ...current, externalLink: event.target.value }))}
+                  placeholder="Google Drive, etc."
+                  />
+              </Field>
+            </div>
+            
+            <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+              <Field label="Email Address (Optional)">
+                  <input
+                  value={cvForm.email}
+                  onChange={(event) => setCvForm((current) => ({ ...current, email: event.target.value }))}
+                  placeholder="name@email.com"
+                  />
+              </Field>
+              <Field label="Phone Number (Optional)">
+                  <input
+                  value={cvForm.phone}
+                  onChange={(event) => setCvForm((current) => ({ ...current, phone: event.target.value }))}
+                  placeholder="+xyz-abcdefghi"
+                  />
+              </Field>
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+              <Field label="LinkedIn ID (Optional)">
+                  <input
+                  value={cvForm.linkedin}
+                  onChange={(event) => setCvForm((current) => ({ ...current, linkedin: event.target.value }))}
+                  placeholder="linkedin.com/in/..."
+                  />
+              </Field>
+              <Field label="Twitter ID (Optional)">
+                  <input
+                  value={cvForm.twitter}
+                  onChange={(event) => setCvForm((current) => ({ ...current, twitter: event.target.value }))}
+                  placeholder="@username"
+                  />
+              </Field>
+            </div>
+
+            <Field label="Descriptive Message">
+              <textarea
+                value={cvForm.description}
+                onChange={(event) => setCvForm((current) => ({ ...current, description: event.target.value }))}
+                placeholder="Message about your skills..."
+                style={{ width: '100%', borderRadius: '8px', padding: '10px', minHeight: '80px', border: '1px solid #e5e7eb', marginTop: '10px' }}
+              />
+            </Field>
+          </div>
           <button type="button" className="primary-button" onClick={onSaveCV} disabled={busy}>
             <CheckCircle2 size={17} />
             Update CV
@@ -940,9 +1059,11 @@ function FreelancerDashboard(props) {
         myServices={myServices} 
         freelancerJobs={freelancerJobs} 
         balance={balance} 
+        flagCount={flagCount}
+        style={{ gridColumn: 'span 1' }}
       />
 
-      <section className="panel services-panel">
+      <section className="panel services-panel" style={{ gridColumn: 'span 2' }}>
         <div className="section-title">
           <div>
             <p className="eyebrow">Portfolio</p>
@@ -954,35 +1075,58 @@ function FreelancerDashboard(props) {
           <NoRecords />
         ) : (
           <div className="record-list">
-            {myServices.map((service) => (
-              <article className="record" key={service.id}>
-                <div className="record-head">
-                  <div>
-                    <span className="record-kicker">Service #{service.id}</span>
-                    <h3>{service.priceEth} ETH</h3>
+            {myServices.map((service) => {
+              const hasActiveJobs = freelancerJobs.some(j => j.serviceId === service.id && (j.status === 1 || j.status === 2));
+
+              return (
+                <article className="record" key={service.id}>
+                  <div className="record-head">
+                    <div>
+                      <span className="record-kicker">Service #{service.id}</span>
+                      <h3>{service.priceEth} ETH</h3>
+                    </div>
+                    <StatusPill status={SERVICE_STATUS[service.status]} />
                   </div>
-                  <StatusPill status={SERVICE_STATUS[service.status]} />
-                </div>
-                <div className="meta-grid">
-                  <span>Rating</span>
-                  <strong>
-                    {service.ratingsCount > 0
-                      ? `${(service.averageRatingX100 / 100).toFixed(1)} / 5 (${service.ratingsCount} ${service.ratingsCount === 1 ? 'rating' : 'ratings'})`
-                      : "Unrated"}
-                  </strong>
-                  <span>Metadata CID</span>
-                  <a href={ipfsUrl(service.metadataCid)} target="_blank" rel="noreferrer">
-                    {service.metadataCid}
-                    <ExternalLink size={13} />
-                  </a>
-                </div>
-              </article>
-            ))}
+                  <div className="meta-grid">
+                    <span>Rating</span>
+                    <strong>
+                      {service.ratingsCount > 0
+                        ? `${(service.averageRatingX100 / 100).toFixed(1)} / 5`
+                        : "Unrated"}
+                    </strong>
+                    <span>Metadata CID</span>
+                    <a href={ipfsUrl(service.metadataCid)} target="_blank" rel="noreferrer">
+                      {service.metadataCid}
+                      <ExternalLink size={13} />
+                    </a>
+                  </div>
+
+                  {service.status === 1 && (
+                    <div className="inline-actions" style={{ marginTop: '1.5rem', borderTop: '1px solid #f1f5f9', paddingTop: '1.5rem', justifyContent: 'flex-end' }}>
+                        <button 
+                          className="ghost-button danger" 
+                          style={{ color: '#dc2626' }}
+                          onClick={() => onRemoveService(service.id)}
+                          disabled={hasActiveJobs || busy}
+                          title={hasActiveJobs ? "Cannot unlist with active escrow" : "Unlist Service"}
+                        >
+                          <Trash2 size={16} /> Unlist
+                        </button>
+                    </div>
+                  )}
+                  {hasActiveJobs && (
+                    <p style={{ fontSize: '0.75rem', color: '#ef4444', marginTop: '8px' }}>
+                      * Actions locked: Service is currently in active escrow.
+                    </p>
+                  )}
+                </article>
+              );
+            })}
           </div>
         )}
       </section>
 
-      <section className="panel jobs-panel">
+      <section className="panel jobs-panel" style={{ gridColumn: 'span 1' }}>
         <div className="section-title">
           <div>
             <p className="eyebrow">Escrow</p>
@@ -1042,7 +1186,7 @@ export default function Home() {
   const [audit, setAudit] = useState(null);
   const [flaggedHistory, setFlaggedHistory] = useState([]);
   
-  const [cvForm, setCvForm] = useState({ cid: "", description: "" });
+  const [cvForm, setCvForm] = useState({ cid: "", description: "", externalLink: "", email: "", phone: "", linkedin: "", twitter: "" });
   const [storedCVs, setStoredCVs] = useState({});
 
   const abiLoaded = (contractArtifact.abi ?? []).length > 0;
@@ -1108,10 +1252,10 @@ export default function Home() {
     setNotice("");
     try {
       if (!window.ethereum) {
-        throw new Error("MetaMask is not available in this browser.");
+        throw new Error("MetaMask is not available.");
       }
       if (!abiLoaded) {
-        throw new Error("Contract ABI is missing. Run npm run compile first.");
+        throw new Error("Contract ABI is missing.");
       }
 
       const nextProvider = new ethers.BrowserProvider(window.ethereum);
@@ -1132,7 +1276,7 @@ export default function Home() {
       if (!deployment?.address) {
         setContract(null);
         setContractAddress("");
-        setError(`No contract deployment found for chain ${detectedChainId}.`);
+        setError(`No deployment found for chain ${detectedChainId}.`);
         return;
       }
 
@@ -1149,34 +1293,25 @@ export default function Home() {
 
   async function handleSaveCV() {
     if (!cvForm.cid.trim()) {
-      setError("Please provide a valid IPFS CID for your CV.");
+      setError("Provide a valid IPFS CID.");
       return;
     }
     setBusy(true);
-    setNotice("Updating professional profile...");
-    
+    setNotice("Updating profile...");
     setTimeout(() => {
-      setStoredCVs(prev => ({
-        ...prev,
-        [account.toLowerCase()]: { ...cvForm }
-      }));
-      setNotice("CV successfully updated!");
+      setStoredCVs(prev => ({ ...prev, [account.toLowerCase()]: { ...cvForm } }));
+      setNotice("CV updated!");
       setBusy(false);
     }, 1000);
   }
 
-  async function handleFlag(targetAddress, description) {
+  async function handleFlag(targetAddress, description, level) {
     if (!description.trim()) return;
     setBusy(true);
     try {
-       const newFlag = {
-         address: targetAddress,
-         description: description,
-         risk: 85,
-         date: new Date()
-       };
+       const newFlag = { address: targetAddress, description, fraudLevel: level, date: new Date() };
        setFlaggedHistory([newFlag, ...flaggedHistory]);
-       setNotice("User successfully flagged.");
+       setNotice("User flagged.");
     } catch (caught) {
        setError(readError(caught));
     } finally {
@@ -1186,12 +1321,12 @@ export default function Home() {
 
   async function runTransaction(action, successMessage) {
     if (!contract) {
-      setError("No contract deployment found for this network.");
+      setError("No contract found.");
       return;
     }
     setBusy(true);
     setError("");
-    setNotice("Waiting for wallet confirmation...");
+    setNotice("Confirming...");
     try {
       const transaction = await action();
       setNotice("Transaction submitted...");
@@ -1210,51 +1345,54 @@ export default function Home() {
     const priceEth = offerForm.priceEth.trim();
     const metadataCid = offerForm.metadataCid.trim();
     if (!priceEth || Number(priceEth) <= 0) {
-      setError("Enter a positive ETH price.");
+      setError("Enter positive price.");
       return;
     }
     if (!metadataCid) {
-      setError("Enter an IPFS metadata CID.");
+      setError("Enter metadata CID.");
       return;
     }
     await runTransaction(
       () => contract.offerService(ethers.parseEther(priceEth), metadataCid),
-      "Service listed on-chain."
+      "Service listed."
     );
     setOfferForm({ priceEth: "", metadataCid: "" });
   }
 
+  async function removeService(serviceId) {
+    await runTransaction(
+      () => contract.removeService(serviceId),
+      "Service removed."
+    );
+  }
+
   async function hireService(service) {
     const days = Number(hireDrafts[service.id] ?? "7");
-    if (!Number.isFinite(days) || days < 1 || days > 30) {
-      setError("Deadline must be 1 to 30 days.");
-      return;
-    }
     const deadline = Math.floor(Date.now() / 1000) + Math.floor(days * DAY_SECONDS);
     await runTransaction(
       () => contract.hireFreelancer(service.id, deadline, { value: service.priceWei }),
-      "Service hired and escrow funded."
+      "Hired and escrow funded."
     );
   }
 
   async function submitWork(job, hash) {
     if (!BYTES32_PATTERN.test(hash || "")) {
-      setError("Deliverable hash must be bytes32.");
+      setError("Hash must be bytes32.");
       return;
     }
-    await runTransaction(() => contract.submitWork(job.id, hash), "Deliverable hash submitted.");
+    await runTransaction(() => contract.submitWork(job.id, hash), "Work submitted.");
   }
 
   async function confirmJob(job) {
-    await runTransaction(() => contract.confirmCompletion(job.id), "Escrow released to freelancer.");
+    await runTransaction(() => contract.confirmCompletion(job.id), "Escrow released.");
   }
 
   async function cancelJob(job) {
-    await runTransaction(() => contract.cancelJob(job.id), "Job cancelled and client refunded.");
+    await runTransaction(() => contract.cancelJob(job.id), "Job cancelled.");
   }
 
   async function autoCancelJob(job) {
-    await runTransaction(() => contract.autoCancelExpired(job.id), "Expired job auto-cancelled.");
+    await runTransaction(() => contract.autoCancelExpired(job.id), "Expired job cancelled.");
   }
 
   async function rateJob(job) {
@@ -1263,17 +1401,12 @@ export default function Home() {
   }
 
   async function auditClient() {
-    if (!contract) {
-      setError("No contract deployment found for this network.");
-      return;
-    }
+    if (!contract) return;
     if (!ethers.isAddress(auditAddress)) {
-      setError("Enter a valid client wallet address.");
+      setError("Invalid address.");
       return;
     }
     setBusy(true);
-    setError("");
-    setNotice("");
     try {
       const result = await contract.auditClient(auditAddress);
       setAudit(normalizeAudit(result));
@@ -1287,13 +1420,9 @@ export default function Home() {
   useEffect(() => {
     if (!window.ethereum) return undefined;
     const onAccountsChanged = (accounts) => {
-      if (!accounts.length) {
-        resetSession();
-      }
+      if (!accounts.length) resetSession();
     };
-    const onChainChanged = () => {
-      resetSession();
-    };
+    const onChainChanged = () => resetSession();
     window.ethereum.on("accountsChanged", onAccountsChanged);
     window.ethereum.on("chainChanged", onChainChanged);
     return () => {
@@ -1302,87 +1431,36 @@ export default function Home() {
     };
   }, [resetSession]);
 
-  if (!role) {
-    return <Landing onSelectRole={setRole} />;
-  }
-
-  if (!account) {
-    return (
-      <WalletGate
-        role={role}
-        onBack={() => {
-          setRole(null);
-          resetSession();
-        }}
-        onConnect={connectWallet}
-        error={error}
-        busy={busy}
-      />
-    );
-  }
+  if (!role) return <Landing onSelectRole={setRole} />;
+  if (!account) return <WalletGate role={role} onBack={() => { setRole(null); resetSession(); }} onConnect={connectWallet} error={error} busy={busy} />;
 
   const sharedProps = {
-    account,
-    busy,
-    auditAddress,
-    setAuditAddress,
-    audit,
+    account, busy, auditAddress, setAuditAddress, audit, 
     freelancerCV: storedCVs[auditAddress.toLowerCase()] || null,
-    cvForm,
-    setCvForm,
-    onSaveCV: handleSaveCV,
-    onAudit: auditClient,
-    onFlag: handleFlag,
-    flaggedHistory,
-    onCancel: cancelJob,
-    onAutoCancel: autoCancelJob,
-    balance
+    cvForm, setCvForm, onSaveCV: handleSaveCV, onAudit: auditClient,
+    onFlag: handleFlag, flaggedHistory, onCancel: cancelJob, onAutoCancel: autoCancelJob, balance
   };
 
   return (
     <main className="app-shell">
       <div className="ambient-grid" />
-      <TopBar
-        role={role}
-        account={account}
-        balance={balance}
-        chainId={chainId}
-        contractAddress={contractAddress}
-        abiLoaded={abiLoaded}
-        onRefresh={() => refreshBlockchainState()}
-        onDisconnect={resetSession}
-        busy={busy}
-      />
-
+      <TopBar role={role} account={account} balance={balance} chainId={chainId} contractAddress={contractAddress} abiLoaded={abiLoaded} onRefresh={() => refreshBlockchainState()} onDisconnect={resetSession} busy={busy} />
       {error ? <div className="toast error-line">{error}</div> : null}
       {notice ? <div className="toast notice-line">{notice}</div> : null}
-
       {role === "hirer" ? (
-        <HirerDashboard
-          {...sharedProps}
-          services={sortedServices}
-          clientJobs={clientJobs}
-          sortMode={sortMode}
-          setSortMode={setSortMode}
-          hireDrafts={hireDrafts}
-          setHireDrafts={setHireDrafts}
-          ratingDrafts={ratingDrafts}
-          setRatingDrafts={setRatingDrafts}
-          onHire={hireService}
-          onConfirm={confirmJob}
-          onRate={rateJob}
-        />
+        <HirerDashboard {...sharedProps} services={sortedServices} clientJobs={clientJobs} sortMode={sortMode} setSortMode={setSortMode} hireDrafts={hireDrafts} setHireDrafts={setHireDrafts} ratingDrafts={ratingDrafts} setRatingDrafts={setRatingDrafts} onHire={hireService} onConfirm={confirmJob} onRate={rateJob} />
       ) : (
-        <FreelancerDashboard
-          {...sharedProps}
-          myServices={myServices}
-          freelancerJobs={freelancerJobs}
-          offerForm={offerForm}
-          setOfferForm={setOfferForm}
-          submitDrafts={submitDrafts}
-          setSubmitDrafts={setSubmitDrafts}
-          onOfferService={offerService}
-          onSubmitWork={submitWork}
+        <FreelancerDashboard 
+          {...sharedProps} 
+          myServices={myServices} 
+          freelancerJobs={freelancerJobs} 
+          offerForm={offerForm} 
+          setOfferForm={setOfferForm} 
+          submitDrafts={submitDrafts} 
+          setSubmitDrafts={setSubmitDrafts} 
+          onOfferService={offerService} 
+          onRemoveService={removeService}
+          onSubmitWork={submitWork} 
         />
       )}
     </main>
