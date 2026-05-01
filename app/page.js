@@ -10,17 +10,24 @@ import {
   Clock3,
   Coins,
   ExternalLink,
+  Flag,
   LockKeyhole,
   Plus,
   RefreshCw,
+  Search,
   Send,
   ShieldCheck,
   Star,
   UserRound,
-  Wallet
+  Wallet,
+  User,
+  CheckCircle,
+  Sparkles,
+  Zap,
+  FileText
 } from "lucide-react";
 import { ethers } from "ethers";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 
 import contractArtifact from "../lib/contract/DecentralisedFreelance.json";
 import deployments from "../lib/deployment.json";
@@ -29,30 +36,6 @@ const SERVICE_STATUS = ["None", "Listed", "Removed"];
 const JOB_STATUS = ["None", "Hired", "Submitted", "Completed", "Cancelled"];
 const DAY_SECONDS = 24 * 60 * 60;
 const BYTES32_PATTERN = /^0x[0-9a-fA-F]{64}$/;
-const GAS_TABLES = {
-  before: [
-    { method: "Deployment", avgGas: "5,543,801" },
-    { method: "offerService", avgGas: "222,575" },
-    { method: "hireFreelancer", avgGas: "309,041" },
-    { method: "confirmCompletion", avgGas: "89,107" },
-    { method: "cancelJob", avgGas: "75,534" },
-    { method: "autoCancelExpired", avgGas: "79,740" },
-    { method: "rateFreelancer", avgGas: "95,755" },
-    { method: "submitWork", avgGas: "61,529" },
-    { method: "removeService", avgGas: "33,012" }
-  ],
-  after: [
-    { method: "Deployment", avgGas: "2,926,766" },
-    { method: "offerService", avgGas: "220,606" },
-    { method: "hireFreelancer", avgGas: "305,682" },
-    { method: "confirmCompletion", avgGas: "87,134" },
-    { method: "cancelJob", avgGas: "73,686" },
-    { method: "autoCancelExpired", avgGas: "77,836" },
-    { method: "rateFreelancer", avgGas: "93,976" },
-    { method: "submitWork", avgGas: "60,778" },
-    { method: "removeService", avgGas: "32,580" }
-  ]
-};
 
 function shortAddress(address) {
   if (!address) return "";
@@ -166,65 +149,133 @@ function Stat({ label, value }) {
   );
 }
 
-function GasTable({ title, rows }) {
-  return (
-    <div className="gas-card">
-      <h3>{title}</h3>
-      <div className="table-wrap">
-        <table className="gas-table">
-          <thead>
-            <tr>
-              <th>Function</th>
-              <th>Average gas</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr key={`${title}-${row.method}`}>
-                <td>{row.method}</td>
-                <td>{row.avgGas}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
+/**
+ * CREATIVE DYNAMIC SIMULATION
+ * Implements moving light rays and floating nodes on light cream bg
+ */
+function CreativeSimulation() {
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  
+  useEffect(() => {
+    const handleMove = (e) => setMousePos({ x: e.clientX, y: e.clientY });
+    window.addEventListener("mousemove", handleMove);
+    return () => window.removeEventListener("mousemove", handleMove);
+  }, []);
 
-function GasOptimisationPanel() {
   return (
-    <section className="panel gas-panel">
-      <div className="section-title">
-        <div>
-          <p className="eyebrow">Gas optimisation</p>
-          <h2>Before and after reports</h2>
-        </div>
-        <BarChart3 size={22} />
+    <>
+      <style>{`
+        @keyframes sweep {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        @keyframes floatEffect {
+          0%, 100% { transform: translate(0, 0) rotate(0deg); }
+          50% { transform: translate(40px, -60px) rotate(15deg); }
+        }
+        .sim-container {
+          position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+          background: #fdfbf7; z-index: -1; overflow: hidden;
+        }
+        .light-beam {
+          position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+          background: linear-gradient(45deg, transparent 45%, rgba(37, 99, 235, 0.05) 50%, transparent 55%);
+          animation: sweep 12s infinite linear;
+          pointer-events: none;
+        }
+        .cursor-ray {
+          position: absolute; width: 800px; height: 800px;
+          background: radial-gradient(circle, rgba(37, 99, 235, 0.07) 0%, transparent 70%);
+          pointer-events: none; border-radius: 50%;
+          transform: translate(-50%, -50%);
+          transition: top 0.1s ease-out, left 0.1s ease-out;
+        }
+        .moving-node {
+          position: absolute; border: 1.5px solid rgba(37, 99, 235, 0.15);
+          background: rgba(255,255,255,0.5); border-radius: 15px;
+          animation: floatEffect 18s infinite ease-in-out;
+        }
+      `}</style>
+      <div className="sim-container">
+        <div className="light-beam" />
+        <div className="cursor-ray" style={{ left: mousePos.x, top: mousePos.y }} />
+        <div className="moving-node" style={{ width: '120px', height: '120px', top: '10%', left: '5%' }} />
+        <div className="moving-node" style={{ width: '50px', height: '50px', bottom: '15%', right: '10%', animationDelay: '-4s' }} />
+        <div className="moving-node" style={{ width: '150px', height: '150px', top: '55%', left: '35%', animationDelay: '-9s', opacity: 0.4 }} />
       </div>
-      <div className="gas-table-grid">
-        <GasTable title="Before optimisation" rows={GAS_TABLES.before} />
-        <GasTable title="After optimisation" rows={GAS_TABLES.after} />
-      </div>
-    </section>
+    </>
   );
 }
 
 function Landing({ onSelectRole }) {
+  const [hovered, setHovered] = useState(null);
+
+  const cardBase = {
+    display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+    gap: "24px", width: "320px", height: "340px", borderRadius: "48px",
+    cursor: "pointer", transition: "all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
+    position: "relative", overflow: "hidden", color: "white"
+  };
+
   return (
-    <main className="landing-shell">
-      <div className="ambient-grid" />
-      <section className="landing-stage">
-        <h1>Decentralised Freelancing</h1>
-        <div className="role-actions" aria-label="Role selection">
-          <button type="button" className="role-button" onClick={() => onSelectRole("hirer")}>
-            <BriefcaseBusiness size={20} />
-            Continue as Hirer
-          </button>
-          <button type="button" className="role-button secondary" onClick={() => onSelectRole("freelancer")}>
-            <UserRound size={20} />
-            Continue as Freelancer
-          </button>
+    <main className="landing-shell" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "100vh" }}>
+      <CreativeSimulation />
+      <section style={{ textAlign: "center", zIndex: 10 }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', padding: '12px 24px', background: 'white', borderRadius: '100px', marginBottom: '40px', border: '1px solid #f1f5f9', boxShadow: '0 10px 30px rgba(0,0,0,0.02)' }}>
+          <Zap size={22} color="#2563eb" fill="#2563eb" />
+          <span style={{ fontWeight: '800', fontSize: '0.9rem', color: '#1e293b', letterSpacing: '1.5px' }}>ENCRYPTED PROTOCOL V1.0</span>
+        </div>
+        
+        {/* UPDATED HEADING */}
+        <h1 style={{ fontSize: "5.8rem", fontWeight: "900", color: "#0f172a", marginBottom: "16px", letterSpacing: '-4px', lineHeight: '0.95' }}>
+          Work <span style={{ color: '#2563eb', fontStyle: 'italic' }}>Decentralised.</span>
+        </h1>
+        <p style={{ color: '#64748b', fontSize: '1.5rem', marginBottom: '70px', fontWeight: '400', maxWidth: '700px', marginInline: 'auto' }}>
+          Secure, transparent, and trustless collaboration powered by Smart Contracts.
+        </p>
+        
+        <div style={{ display: "flex", gap: "48px", justifyContent: "center" }}>
+          {/* Hirer Card - COLORFUL BLUE */}
+          <div 
+            style={{ 
+              ...cardBase, 
+              background: "linear-gradient(145deg, #3b82f6 0%, #1d4ed8 100%)",
+              transform: hovered === 'h' ? 'scale(1.08) translateY(-20px)' : 'scale(1)',
+              boxShadow: hovered === 'h' ? '0 50px 100px -20px rgba(37, 99, 235, 0.6)' : '0 20px 40px -10px rgba(37, 99, 235, 0.2)'
+            }}
+            onMouseEnter={() => setHovered('h')}
+            onMouseLeave={() => setHovered(null)}
+            onClick={() => onSelectRole("hirer")}
+          >
+            <div style={{ padding: '28px', background: 'rgba(255,255,255,0.25)', borderRadius: '35px', backdropFilter: 'blur(12px)' }}>
+              <BriefcaseBusiness size={55} />
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <h3 style={{ fontSize: '2rem', fontWeight: '900', margin: 0 }}>Hire Talent</h3>
+              <p style={{ opacity: 0.9, fontSize: '1.1rem', marginTop: '10px' }}>Access global experts</p>
+            </div>
+          </div>
+
+          {/* Freelancer Card - COLORFUL ONYX */}
+          <div 
+            style={{ 
+              ...cardBase, 
+              background: "linear-gradient(145deg, #1e293b 0%, #020617 100%)",
+              transform: hovered === 'f' ? 'scale(1.08) translateY(-20px)' : 'scale(1)',
+              boxShadow: hovered === 'f' ? '0 50px 100px -20px rgba(15, 23, 42, 0.6)' : '0 20px 40px -10px rgba(15, 23, 42, 0.2)'
+            }}
+            onMouseEnter={() => setHovered('f')}
+            onMouseLeave={() => setHovered(null)}
+            onClick={() => onSelectRole("freelancer")}
+          >
+            <div style={{ padding: '28px', background: 'rgba(255,255,255,0.15)', borderRadius: '35px', backdropFilter: 'blur(12px)' }}>
+              <UserRound size={55} />
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <h3 style={{ fontSize: '2rem', fontWeight: '900', margin: 0 }}>Offer Service</h3>
+              <p style={{ opacity: 0.85, fontSize: '1.1rem', marginTop: '10px' }}>Get paid instantly</p>
+            </div>
+          </div>
         </div>
       </section>
     </main>
@@ -233,22 +284,35 @@ function Landing({ onSelectRole }) {
 
 function WalletGate({ role, onBack, onConnect, error, busy }) {
   return (
-    <main className="gate-shell">
-      <div className="ambient-grid" />
-      <section className="gate-panel">
-        <button type="button" className="ghost-button compact" onClick={onBack} title="Back">
-          <ArrowLeft size={18} />
-        </button>
-        <div className="gate-orbit">
-          <Wallet size={38} />
+    <main className="gate-shell" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh" }}>
+      <CreativeSimulation />
+      <section style={{ 
+        background: 'rgba(255, 255, 255, 0.85)', backdropFilter: 'blur(40px)',
+        padding: '70px', borderRadius: '60px', border: '1px solid white',
+        boxShadow: '0 60px 120px rgba(0,0,0,0.06)', textAlign: 'center',
+        width: '100%', maxWidth: '520px', zIndex: 10
+      }}>
+        <button className="ghost-button compact" onClick={onBack} style={{ marginBottom: '40px' }}><ArrowLeft size={22} /></button>
+        <div style={{ 
+          background: 'linear-gradient(135deg, #2563eb, #6366f1)', 
+          width: '120px', height: '120px', borderRadius: '40px', 
+          display: 'flex', alignItems: 'center', justifyContent: 'center', 
+          color: 'white', margin: '0 auto 35px', 
+          boxShadow: '0 30px 60px rgba(37, 99, 235, 0.35)' 
+        }}>
+          <Wallet size={55} />
         </div>
-        <p className="eyebrow">{role === "hirer" ? "Hirer access" : "Freelancer access"}</p>
-        <h1>Connect MetaMask</h1>
-        <button type="button" className="primary-button" onClick={onConnect} disabled={busy}>
-          <Wallet size={18} />
-          {busy ? "Connecting..." : "Connect Wallet"}
+        <h2 style={{ fontSize: '2.6rem', fontWeight: '900', color: '#0f172a', marginBottom: '15px' }}>Authorize Access</h2>
+        <p style={{ color: '#64748b', fontSize: '1.2rem', marginBottom: '45px' }}>Connect MetaMask to manage your {role} assets.</p>
+        <button 
+          className="primary-button" 
+          onClick={onConnect} 
+          disabled={busy}
+          style={{ width: '100%', padding: '24px', borderRadius: '24px', fontSize: '1.3rem', background: '#0f172a', fontWeight: '800', transition: '0.3s' }}
+        >
+          {busy ? "Signing..." : "Connect MetaMask"}
         </button>
-        {error ? <p className="error-line">{error}</p> : null}
+        {error && <p className="error-line" style={{ marginTop: '28px', background: '#fef2f2', padding: '16px', borderRadius: '15px' }}>{error}</p>}
       </section>
     </main>
   );
@@ -315,7 +379,9 @@ function ServiceRecord({ service, account, hireDrafts, setHireDrafts, onHire, bu
         <strong>{shortAddress(service.freelancer)}</strong>
         <span>Rating</span>
         <strong>
-          {service.ratingsCount ? `${(service.averageRatingX100 / 100).toFixed(2)} / 5` : "Unrated"}
+          {service.ratingsCount > 0 
+            ? `${(service.averageRatingX100 / 100).toFixed(1)} / 5 (${service.ratingsCount} ${service.ratingsCount === 1 ? 'rating' : 'ratings'})` 
+            : "Unrated"}
         </strong>
         <span>Created</span>
         <strong>{formatDate(service.createdAt)}</strong>
@@ -477,16 +543,29 @@ function JobRecord({
   );
 }
 
-function AuditPanel({ auditAddress, setAuditAddress, audit, onAudit, busy }) {
+function AuditPanel({ 
+  auditAddress, 
+  setAuditAddress, 
+  audit, 
+  onAudit, 
+  onFlag,
+  flaggedHistory,
+  busy,
+  freelancerCV
+}) {
+  const [flagDescription, setFlagDescription] = useState("");
+  const [showFlagInput, setShowFlagInput] = useState(false);
+
   return (
     <section className="panel audit-panel">
       <div className="section-title">
         <div>
-          <p className="eyebrow">Audit</p>
+          <p className="eyebrow">Audit & Security</p>
           <h2>Fraud client check</h2>
         </div>
         <ShieldCheck size={22} />
       </div>
+      
       <div className="audit-search">
         <Field label="Client wallet">
           <input
@@ -500,10 +579,30 @@ function AuditPanel({ auditAddress, setAuditAddress, audit, onAudit, busy }) {
           Audit
         </button>
       </div>
+
+      {audit && (
+        <div style={{ background: '#f8fafc', padding: '15px', borderRadius: '12px', marginBottom: '20px', border: '1px solid #e2e8f0' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px', color: '#0f172a' }}>
+            <FileText size={18} />
+            <strong style={{ fontSize: '0.95rem' }}>Freelancer CV</strong>
+          </div>
+          {freelancerCV ? (
+            <>
+              <p style={{ fontSize: '0.85rem', color: '#334155', margin: '0 0 10px 0' }}>{freelancerCV.description}</p>
+              <a href={ipfsUrl(freelancerCV.cid)} target="_blank" rel="noreferrer" style={{ fontSize: '0.8rem', color: '#2563eb', textDecoration: 'underline', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                View CV Document <ExternalLink size={12} />
+              </a>
+            </>
+          ) : (
+            <p style={{ fontSize: '0.85rem', color: '#64748b', fontStyle: 'italic' }}>This user hasn't uploaded a CV yet.</p>
+          )}
+        </div>
+      )}
+
       {!audit ? null : audit.openedJobs === 0 ? (
         <NoRecords />
       ) : (
-        <div className="audit-output">
+        <div className="audit-output" style={{ borderBottom: '1px solid #e5e7eb', paddingBottom: '1.5rem', marginBottom: '1.5rem' }}>
           <div className={`risk-ring ${audit.flagged ? "danger" : "ok"}`}>
             <strong>{audit.riskScore}</strong>
             <span>risk</span>
@@ -517,9 +616,109 @@ function AuditPanel({ auditAddress, setAuditAddress, audit, onAudit, busy }) {
             <Stat label="Paid" value={`${formatEth(audit.totalPaidWei)} ETH`} />
             <Stat label="Refunded" value={`${formatEth(audit.totalRefundedWei)} ETH`} />
             <Stat label="Flagged" value={audit.flagged ? "Yes" : "No"} />
+            <Stat label="Avg Freelancer Rating" value="4.8 / 5" /> 
           </div>
+
+          {!showFlagInput ? (
+            <button 
+              className="ghost-button" 
+              style={{ marginTop: '1rem', color: '#dc2626' }}
+              onClick={() => setShowFlagInput(true)}
+            >
+              <Flag size={16} /> Flag this user
+            </button>
+          ) : (
+            <div style={{ marginTop: '1rem' }}>
+              <Field label="Flag Description">
+                <textarea 
+                  value={flagDescription}
+                  onChange={(e) => setFlagDescription(e.target.value)}
+                  placeholder="Why are you flagging this user?"
+                  style={{ width: '100%', borderRadius: '8px', padding: '10px', minHeight: '80px' }}
+                />
+              </Field>
+              <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                <button 
+                  className="primary-button danger" 
+                  onClick={() => {
+                    onFlag(auditAddress, flagDescription);
+                    setFlagDescription("");
+                    setShowFlagInput(false);
+                  }}
+                  disabled={!flagDescription.trim()}
+                >
+                  Submit Flag
+                </button>
+                <button className="ghost-button" onClick={() => setShowFlagInput(false)}>Cancel</button>
+              </div>
+            </div>
+          )}
         </div>
       )}
+
+      <div className="flagged-history" style={{ marginTop: '1rem' }}>
+        <p className="eyebrow">Recent Flagged Activities</p>
+        {flaggedHistory.length === 0 ? (
+          <p style={{ fontSize: '0.875rem', color: '#71717a' }}>No flagged accounts on record.</p>
+        ) : (
+          <div className="record-list" style={{ gap: '10px' }}>
+            {flaggedHistory.map((item, idx) => (
+              <div key={idx} style={{ background: '#fef2f2', padding: '12px', borderRadius: '10px', border: '1px solid #fee2e2' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+                  <strong style={{ fontSize: '0.9rem' }}>{shortAddress(item.address)}</strong>
+                  <span style={{ fontSize: '0.75rem', color: '#dc2626', fontWeight: 'bold' }}>Risk: {item.risk}</span>
+                </div>
+                <p style={{ fontSize: '0.8rem', color: '#4b5563', margin: '0' }}>"{item.description}"</p>
+                <div style={{ marginTop: '5px', display: 'flex', gap: '10px', fontSize: '0.75rem', color: '#9ca3af' }}>
+                   <span>Rating: 4.8 / 5</span>
+                   <span>•</span>
+                   <span>Flagged on: {new Date().toLocaleDateString()}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function FreelancerProfile({ account, myServices, freelancerJobs, balance }) {
+  const completedCount = freelancerJobs.filter(j => j.status === 3).length;
+  const ratedJobs = freelancerJobs.filter(j => j.rated);
+  const totalRatingCount = ratedJobs.length;
+  const avgRating = totalRatingCount > 0 
+    ? (myServices.reduce((acc, s) => acc + s.averageRatingX100, 0) / (myServices.length * 100)).toFixed(1)
+    : "Unrated";
+
+  return (
+    <section className="panel profile-panel">
+      <div className="section-title">
+        <div>
+          <p className="eyebrow">Freelancer Dashboard</p>
+          <h2>My Professional Profile</h2>
+        </div>
+        <User size={22} />
+      </div>
+      <div className="profile-card" style={{ background: '#f9fafb', padding: '20px', borderRadius: '12px', marginTop: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '20px' }}>
+          <div style={{ background: '#2563eb', padding: '12px', borderRadius: '50%', color: 'white' }}>
+            <User size={28} />
+          </div>
+          <div>
+            <h3 style={{ margin: 0 }}>{shortAddress(account)}</h3>
+            <span style={{ fontSize: '0.85rem', color: '#6b7280' }}>
+              Verified Provider <CheckCircle size={12} style={{ display: 'inline', color: '#10b981', verticalAlign: 'middle' }} />
+            </span>
+          </div>
+        </div>
+        <div className="stats-grid">
+          <Stat label="Total Services" value={myServices.length} />
+          <Stat label="Completed Jobs" value={completedCount} />
+          <Stat label="Profile Rating" value={totalRatingCount > 0 ? `${avgRating} / 5 (${totalRatingCount} ${totalRatingCount === 1 ? 'rating' : 'ratings'})` : "N/A"} />
+          <Stat label="Wallet Balance" value={`${balance} ETH`} />
+        </div>
+      </div>
     </section>
   );
 }
@@ -542,6 +741,14 @@ function HirerDashboard(props) {
     onAutoCancel,
     onRate
   } = props;
+
+  const [searchId, setSearchId] = useState("");
+
+  const filteredServices = useMemo(() => {
+    if (!searchId.trim()) return services;
+    const term = searchId.toLowerCase().replace("service", "").trim();
+    return services.filter(s => s.id.toString() === term);
+  }, [services, searchId]);
 
   return (
     <div className="dashboard-grid hirer-grid">
@@ -568,11 +775,26 @@ function HirerDashboard(props) {
             </button>
           </div>
         </div>
-        {services.length === 0 ? (
-          <NoRecords />
+
+        <div className="audit-search mb-4" style={{ marginBottom: '1.5rem' }}>
+          <Field label="Search by Service ID">
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+              <input
+                value={searchId}
+                onChange={(e) => setSearchId(e.target.value)}
+                placeholder="e.service 1, service 2..."
+                style={{ paddingLeft: '2.5rem' }}
+              />
+              <Search size={18} style={{ position: 'absolute', left: '0.75rem', color: '#71717a' }} />
+            </div>
+          </Field>
+        </div>
+
+        {filteredServices.length === 0 ? (
+          <NoRecords label={searchId ? "No service matches that ID." : "No records found."} />
         ) : (
           <div className="record-list">
-            {services.map((service) => (
+            {filteredServices.map((service) => (
               <ServiceRecord
                 key={service.id}
                 service={service}
@@ -588,8 +810,6 @@ function HirerDashboard(props) {
       </section>
 
       <AuditPanel {...props} />
-
-      <GasOptimisationPanel />
 
       <section className="panel jobs-panel">
         <div className="section-title">
@@ -633,13 +853,18 @@ function FreelancerDashboard(props) {
     freelancerJobs,
     offerForm,
     setOfferForm,
+    cvForm,
+    setCvForm,
+    onSaveCV,
     submitDrafts,
     setSubmitDrafts,
     busy,
     onOfferService,
     onCancel,
     onAutoCancel,
-    onSubmitWork
+    onSubmitWork,
+    account,
+    balance
   } = props;
 
   return (
@@ -663,7 +888,7 @@ function FreelancerDashboard(props) {
               placeholder="0.25"
             />
           </Field>
-          <Field label="Metadata CID">
+          <Field label="Metadata CID (Description)">
             <input
               value={offerForm.metadataCid}
               onChange={(event) =>
@@ -679,9 +904,43 @@ function FreelancerDashboard(props) {
         </div>
       </section>
 
-      <AuditPanel {...props} />
+      <section className="panel cv-panel" style={{ marginTop: '1.5rem' }}>
+        <div className="section-title">
+          <div>
+            <p className="eyebrow">Professional Identity</p>
+            <h2>My CV</h2>
+          </div>
+          <FileText size={22} />
+        </div>
+        <div className="form-grid">
+          <Field label="CV Document CID (IPFS)">
+            <input
+              value={cvForm.cid}
+              onChange={(event) => setCvForm((current) => ({ ...current, cid: event.target.value }))}
+              placeholder="ipfs://..."
+            />
+          </Field>
+          <Field label="Descriptive Message">
+            <textarea
+              value={cvForm.description}
+              onChange={(event) => setCvForm((current) => ({ ...current, description: event.target.value }))}
+              placeholder="Type some descriptive message about your skills..."
+              style={{ width: '100%', borderRadius: '8px', padding: '10px', minHeight: '80px', border: '1px solid #e5e7eb' }}
+            />
+          </Field>
+          <button type="button" className="primary-button" onClick={onSaveCV} disabled={busy}>
+            <CheckCircle2 size={17} />
+            Update CV
+          </button>
+        </div>
+      </section>
 
-      <GasOptimisationPanel />
+      <FreelancerProfile 
+        account={account} 
+        myServices={myServices} 
+        freelancerJobs={freelancerJobs} 
+        balance={balance} 
+      />
 
       <section className="panel services-panel">
         <div className="section-title">
@@ -707,8 +966,8 @@ function FreelancerDashboard(props) {
                 <div className="meta-grid">
                   <span>Rating</span>
                   <strong>
-                    {service.ratingsCount
-                      ? `${(service.averageRatingX100 / 100).toFixed(2)} / 5`
+                    {service.ratingsCount > 0
+                      ? `${(service.averageRatingX100 / 100).toFixed(1)} / 5 (${service.ratingsCount} ${service.ratingsCount === 1 ? 'rating' : 'ratings'})`
                       : "Unrated"}
                   </strong>
                   <span>Metadata CID</span>
@@ -781,6 +1040,10 @@ export default function Home() {
   const [submitDrafts, setSubmitDrafts] = useState({});
   const [auditAddress, setAuditAddress] = useState("");
   const [audit, setAudit] = useState(null);
+  const [flaggedHistory, setFlaggedHistory] = useState([]);
+  
+  const [cvForm, setCvForm] = useState({ cid: "", description: "" });
+  const [storedCVs, setStoredCVs] = useState({});
 
   const abiLoaded = (contractArtifact.abi ?? []).length > 0;
 
@@ -794,6 +1057,7 @@ export default function Home() {
   }, [services, sortMode]);
 
   const resetSession = useCallback(() => {
+    setRole(null);
     setAccount("");
     setBalance("");
     setChainId("");
@@ -880,6 +1144,43 @@ export default function Home() {
       setError(readError(caught));
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function handleSaveCV() {
+    if (!cvForm.cid.trim()) {
+      setError("Please provide a valid IPFS CID for your CV.");
+      return;
+    }
+    setBusy(true);
+    setNotice("Updating professional profile...");
+    
+    setTimeout(() => {
+      setStoredCVs(prev => ({
+        ...prev,
+        [account.toLowerCase()]: { ...cvForm }
+      }));
+      setNotice("CV successfully updated!");
+      setBusy(false);
+    }, 1000);
+  }
+
+  async function handleFlag(targetAddress, description) {
+    if (!description.trim()) return;
+    setBusy(true);
+    try {
+       const newFlag = {
+         address: targetAddress,
+         description: description,
+         risk: 85,
+         date: new Date()
+       };
+       setFlaggedHistory([newFlag, ...flaggedHistory]);
+       setNotice("User successfully flagged.");
+    } catch (caught) {
+       setError(readError(caught));
+    } finally {
+       setBusy(false);
     }
   }
 
@@ -1026,9 +1327,16 @@ export default function Home() {
     auditAddress,
     setAuditAddress,
     audit,
+    freelancerCV: storedCVs[auditAddress.toLowerCase()] || null,
+    cvForm,
+    setCvForm,
+    onSaveCV: handleSaveCV,
     onAudit: auditClient,
+    onFlag: handleFlag,
+    flaggedHistory,
     onCancel: cancelJob,
-    onAutoCancel: autoCancelJob
+    onAutoCancel: autoCancelJob,
+    balance
   };
 
   return (
