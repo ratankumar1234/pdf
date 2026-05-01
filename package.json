@@ -1,0 +1,36 @@
+{
+  "name": "decentralised-freelance-platform",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Escrow-backed decentralised freelance platform with MetaMask, audit, and fairness flows.",
+  "scripts": {
+    "compile": "hardhat compile && node scripts/export-abi.js",
+    "test": "hardhat test",
+    "gas": "cross-env REPORT_GAS=true hardhat test",
+    "gas:unoptimized": "cross-env REPORT_GAS=true DISABLE_OPTIMIZER=true hardhat test",
+    "coverage": "hardhat coverage",
+    "accounts": "node scripts/print-accounts.js",
+    "clean": "node scripts/clean.js",
+    "node": "hardhat node",
+    "deploy:localhost": "hardhat run scripts/deploy.js --network localhost",
+    "deploy:hardhat": "hardhat run scripts/deploy.js --network hardhat",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.0.2",
+    "ethers": "^6.13.4",
+    "lucide-react": "^0.468.0",
+    "next": "^14.2.23",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "cross-env": "^7.0.3",
+    "hardhat": "^2.22.19",
+    "hardhat-gas-reporter": "^1.0.10",
+    "solidity-coverage": "^0.8.14"
+  }
+}

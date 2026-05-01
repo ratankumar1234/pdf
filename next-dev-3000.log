@@ -1,0 +1,17 @@
+
+> decentralised-freelance-platform@1.0.0 dev
+> next dev -p 3000
+
+  ▲ Next.js 14.2.35
+  - Local:        http://localhost:3000
+
+ ✓ Starting...
+ ✓ Ready in 2.2s
+ ○ Compiling / ...
+ ✓ Compiled / in 5.7s (837 modules)
+ GET / 200 in 6095ms
+ GET / 200 in 54ms
+ ✓ Compiled in 277ms (428 modules)
+ ✓ Compiled in 444ms (395 modules)
+ ✓ Compiled in 313ms (395 modules)
+ ✓ Compiled in 132ms (395 modules)
