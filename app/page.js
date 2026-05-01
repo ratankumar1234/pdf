@@ -251,8 +251,8 @@ function Landing({ onSelectRole }) {
               <BriefcaseBusiness size={55} />
             </div>
             <div style={{ textAlign: 'center' }}>
-              <h3 style={{ fontSize: '2rem', fontWeight: '900', margin: 0 }}>Hire Talent</h3>
-              <p style={{ opacity: 0.9, fontSize: '1.1rem', marginTop: '10px' }}>Access global experts</p>
+              <h3 style={{ fontSize: '2rem', fontWeight: '900', margin: 0 }}>Hire Service</h3>
+              <p style={{ opacity: 0.9, fontSize: '1.1rem', marginTop: '10px' }}>Access Services</p>
             </div>
           </div>
 
@@ -273,7 +273,7 @@ function Landing({ onSelectRole }) {
             </div>
             <div style={{ textAlign: 'center' }}>
               <h3 style={{ fontSize: '2rem', fontWeight: '900', margin: 0 }}>Offer Service</h3>
-              <p style={{ opacity: 0.85, fontSize: '1.1rem', marginTop: '10px' }}>Get paid instantly</p>
+              <p style={{ opacity: 0.85, fontSize: '1.1rem', marginTop: '10px' }}>Get paid for your skills</p>
             </div>
           </div>
         </div>
